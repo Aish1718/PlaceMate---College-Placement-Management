@@ -25,7 +25,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  TextField,  
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   Logout as LogoutIcon,
@@ -804,21 +808,18 @@ function CoordinatorDashboard() {
               margin="normal"
               required
             />
-            <TextField
-              fullWidth
-              select
-              label="Send To"
-              value={announcementForm.target_role}
-              onChange={(e) => setAnnouncementForm({ ...announcementForm, target_role: e.target.value })}
-              margin="normal"
-              SelectProps={{
-                native: true,
-              }}
-            >
-              <option value="student">All Students</option>
-              <option value="company">All Companies</option>
-              <option value="all">Everyone</option>
-            </TextField>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Send To</InputLabel>
+              <Select
+                value={announcementForm.target_role}
+                onChange={(e) => setAnnouncementForm({ ...announcementForm, target_role: e.target.value })}
+                label="Send To"
+              >
+                <MenuItem value="student">All Students</MenuItem>
+                <MenuItem value="company">All Companies</MenuItem>
+                <MenuItem value="all">Everyone</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>
@@ -833,20 +834,19 @@ function CoordinatorDashboard() {
         <DialogTitle>Create Recruitment Drive</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
-            <TextField
-              fullWidth
-              label="Company"
-              select
-              value={driveForm.company}
-              onChange={(e) => setDriveForm({ ...driveForm, company: e.target.value })}
-              margin="normal"
-              SelectProps={{ native: true }}
-            >
-              <option value="">Select Company</option>
-              {companies.map((comp) => (
-                <option key={comp.id} value={comp.id}>{comp.company_name}</option>
-              ))}
-            </TextField>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Company</InputLabel>
+              <Select
+                value={driveForm.company}
+                onChange={(e) => setDriveForm({ ...driveForm, company: e.target.value })}
+                label="Company"
+              >
+                <MenuItem value="">Select Company</MenuItem>
+                {companies.map((comp) => (
+                  <MenuItem key={comp.id} value={comp.id}>{comp.company_name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <TextField
               fullWidth
               label="Title"
@@ -931,22 +931,21 @@ function CoordinatorDashboard() {
               margin="normal"
               required
             />
-            <TextField
-              fullWidth
-              select
-              label="Event Type"
-              value={eventForm.event_type}
-              onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })}
-              margin="normal"
-              SelectProps={{ native: true }}
-            >
-              <option value="workshop">Workshop</option>
-              <option value="seminar">Seminar</option>
-              <option value="info_session">Information Session</option>
-              <option value="career_fair">Career Fair</option>
-              <option value="networking">Networking Event</option>
-              <option value="other">Other</option>
-            </TextField>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Event Type</InputLabel>
+              <Select
+                value={eventForm.event_type}
+                onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })}
+                label="Event Type"
+              >
+                <MenuItem value="workshop">Workshop</MenuItem>
+                <MenuItem value="seminar">Seminar</MenuItem>
+                <MenuItem value="info_session">Information Session</MenuItem>
+                <MenuItem value="career_fair">Career Fair</MenuItem>
+                <MenuItem value="networking">Networking Event</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </Select>
+            </FormControl>
             <TextField
               fullWidth
               type="datetime-local"

@@ -54,6 +54,26 @@ function StudentDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Get user name from localStorage or user object - prioritize username
+  const getUserDisplayName = () => {
+    // First try localStorage
+    try {
+      const storedUser = localStorage.getItem('user_data');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        if (userData.username) return userData.username;
+      }
+    } catch (e) {
+      console.error('Error reading user data from localStorage:', e);
+    }
+    // Fallback to user object from context
+    if (user && user.username) {
+      return user.username;
+    }
+    // Final fallback
+    return 'Student';
+  };
   const [openJobDialog, setOpenJobDialog] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [coverLetter, setCoverLetter] = useState('');
@@ -61,6 +81,7 @@ function StudentDashboard() {
   const [profileEditMode, setProfileEditMode] = useState(false);
   const [profileForm, setProfileForm] = useState({});
   const [resumeFile, setResumeFile] = useState(null);
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [documentFile, setDocumentFile] = useState(null);
   const [documentType, setDocumentType] = useState('');
   const [openResumeDialog, setOpenResumeDialog] = useState(false);
@@ -75,6 +96,14 @@ function StudentDashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    // Refresh user data when component mounts
+    if (user) {
+      // User data should already be available from AuthContext
+      // But we can ensure it's up to date
+    }
+  }, [user]);
 
   const fetchData = async () => {
     try {
@@ -99,6 +128,7 @@ function StudentDashboard() {
           phone: profileRes.data.phone || '',
           address: profileRes.data.address || '',
           skills: profileRes.data.skills || '',
+          profile_picture: profileRes.data.profile_picture || null,
         });
         // Get latest resume analysis
         if (profileRes.data.resume_analyses && profileRes.data.resume_analyses.length > 0) {
@@ -132,7 +162,7 @@ function StudentDashboard() {
     try {
       const profileId = profile?.id;
       if (!profileId) {
-        alert('Please create your profile first');
+        setSnackbar({ open: true, message: 'Please create your profile first', severity: 'warning' });
         return;
       }
 
@@ -146,16 +176,18 @@ function StudentDashboard() {
       await api.patch(`/students/profiles/${profileId}/`, formData2, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      // Clear old resume analysis when new resume is uploaded
+      setResumeAnalysis(null);
       fetchData();
-      alert('Resume uploaded successfully!');
+      setSnackbar({ open: true, message: 'Resume uploaded successfully! Please analyze again for updated results.', severity: 'success' });
     } catch (error) {
-      alert('Failed to upload resume');
+      setSnackbar({ open: true, message: 'Failed to upload resume', severity: 'error' });
     }
   };
 
   const handleDocumentUpload = async () => {
     if (!documentFile || !documentType) {
-      alert('Please select a document and type');
+      setSnackbar({ open: true, message: 'Please select a document and type', severity: 'warning' });
       return;
     }
 
@@ -166,7 +198,7 @@ function StudentDashboard() {
     try {
       const profileId = profile?.id;
       if (!profileId) {
-        alert('Please create your profile first');
+        setSnackbar({ open: true, message: 'Please create your profile first', severity: 'warning' });
         return;
       }
 
@@ -176,20 +208,20 @@ function StudentDashboard() {
       setDocumentFile(null);
       setDocumentType('');
       fetchData();
-      alert('Document uploaded successfully!');
+      setSnackbar({ open: true, message: 'Document uploaded successfully!', severity: 'success' });
     } catch (error) {
-      alert('Failed to upload document');
+      setSnackbar({ open: true, message: 'Failed to upload document', severity: 'error' });
     }
   };
 
   const handleAnalyzeResume = async () => {
     if (!profile?.id) {
-      alert('Please create your profile first');
+      setSnackbar({ open: true, message: 'Please create your profile first', severity: 'warning' });
       return;
     }
 
     if (!profile.resume) {
-      alert('Please upload a resume first');
+      setSnackbar({ open: true, message: 'Please upload a resume first', severity: 'warning' });
       return;
     }
 
@@ -198,8 +230,9 @@ function StudentDashboard() {
       setResumeAnalysis(response.data);
       setOpenResumeDialog(true);
       fetchData();
+      setSnackbar({ open: true, message: 'Resume analyzed successfully!', severity: 'success' });
     } catch (error) {
-      alert('Failed to analyze resume');
+      setSnackbar({ open: true, message: error.response?.data?.error || 'Failed to analyze resume', severity: 'error' });
     }
   };
 
@@ -210,9 +243,12 @@ function StudentDashboard() {
         // Create new profile
         const formData = new FormData();
         Object.keys(profileForm).forEach(key => {
-          if (profileForm[key]) formData.append(key, profileForm[key]);
+          if (key !== 'profile_picture' && profileForm[key] !== null && profileForm[key] !== undefined && profileForm[key] !== '') {
+            formData.append(key, profileForm[key]);
+          }
         });
         if (resumeFile) formData.append('resume', resumeFile);
+        if (profilePictureFile) formData.append('profile_picture', profilePictureFile);
 
         await api.post('/students/profiles/', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -230,10 +266,12 @@ function StudentDashboard() {
         });
       }
       setProfileEditMode(false);
+      setResumeFile(null);
+      setProfilePictureFile(null);
       fetchData();
-      alert('Profile saved successfully!');
+      setSnackbar({ open: true, message: 'Profile saved successfully!', severity: 'success' });
     } catch (error) {
-      alert('Failed to save profile');
+      setSnackbar({ open: true, message: error.response?.data?.detail || 'Failed to save profile', severity: 'error' });
     }
   };
 
@@ -271,8 +309,8 @@ function StudentDashboard() {
       fetchData();
       setSnackbar({ open: true, message: 'Application submitted successfully!', severity: 'success' });
     } catch (error) {
-      const errorMessage = error.response?.data?.job?.[0] || 
-                          error.response?.data?.error || 
+      const errorMessage = error.response?.data?.job?.[0] ||
+                          error.response?.data?.error ||
                           error.response?.data?.detail ||
                           'Failed to submit application';
       // Close dialog immediately
@@ -323,7 +361,7 @@ function StudentDashboard() {
         <Toolbar>
           <SchoolIcon sx={{ mr: 2, fontSize: 32 }} />
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            PlaceMate - Student Dashboard
+            PlaceMate - {getUserDisplayName()} Dashboard
           </Typography>
           <Button
             color="inherit"
@@ -355,7 +393,7 @@ function StudentDashboard() {
               }}
             >
               <Typography variant="h4" fontWeight="bold" gutterBottom>
-                Welcome back, {user?.first_name || user?.username}! 👋
+                Welcome back, {getUserDisplayName()}! 👋
               </Typography>
               <Typography variant="body1" sx={{ opacity: 0.9 }}>
                 Manage your profile, explore opportunities, and track your applications
@@ -482,7 +520,7 @@ function StudentDashboard() {
                     <Grid container spacing={2}>
                       {jobs
                         .filter((job) => {
-                          const matchesSearch = !searchTerm || 
+                          const matchesSearch = !searchTerm ||
                             job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             job.company?.company_name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -571,7 +609,7 @@ function StudentDashboard() {
                       ))}
                     </Grid>
                     {jobs.filter((job) => {
-                      const matchesSearch = !searchTerm || 
+                      const matchesSearch = !searchTerm ||
                         job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         job.company?.company_name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -687,7 +725,7 @@ function StudentDashboard() {
                                 placeholder="e.g., Python, JavaScript, React"
                               />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid item xs={12} md={6}>
                               <Box sx={{ mt: 2 }}>
                                 <Typography variant="subtitle2" gutterBottom>
                                   Upload Resume (PDF/DOC)
@@ -699,12 +737,46 @@ function StudentDashboard() {
                                   style={{ marginBottom: '10px' }}
                                 />
                                 {resumeFile && <Typography variant="caption">{resumeFile.name}</Typography>}
+                                {profile?.resume && !resumeFile && (
+                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                                    Current: {profile.resume.split('/').pop()}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                              <Box sx={{ mt: 2 }}>
+                                <Typography variant="subtitle2" gutterBottom>
+                                  Profile Picture (JPG/PNG)
+                                </Typography>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => setProfilePictureFile(e.target.files[0])}
+                                  style={{ marginBottom: '10px' }}
+                                />
+                                {profilePictureFile && <Typography variant="caption">{profilePictureFile.name}</Typography>}
+                                {profile?.profile_picture && !profilePictureFile && (
+                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                                    Current picture uploaded
+                                  </Typography>
+                                )}
                               </Box>
                             </Grid>
                             <Grid item xs={12}>
-                              <Button variant="contained" onClick={handleSaveProfile} sx={{ mt: 2 }}>
-                                Save Profile
-                              </Button>
+                              <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                <Button variant="contained" onClick={handleSaveProfile}>
+                                  Save Profile
+                                </Button>
+                                <Button variant="outlined" onClick={() => {
+                                  setProfileEditMode(false);
+                                  setResumeFile(null);
+                                  setProfilePictureFile(null);
+                                  fetchData();
+                                }}>
+                                  Cancel
+                                </Button>
+                              </Box>
                             </Grid>
                           </Grid>
                         </CardContent>
@@ -735,7 +807,33 @@ function StudentDashboard() {
                                   <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
                                     {profile.resume ? (
                                       <>
-                                        <Button variant="outlined" href={`http://localhost:8000${profile.resume}`} target="_blank">
+                                        <Button
+                                          variant="outlined"
+                                          onClick={async () => {
+                                            try {
+                                              // Construct proper resume URL
+                                              let resumeUrl;
+                                              if (profile.resume.startsWith('http')) {
+                                                resumeUrl = profile.resume;
+                                              } else if (profile.resume.startsWith('/media/')) {
+                                                resumeUrl = `http://localhost:8000${profile.resume}`;
+                                              } else {
+                                                resumeUrl = `http://localhost:8000/media/${profile.resume}`;
+                                              }
+
+                                              // Open in new tab
+                                              const link = document.createElement('a');
+                                              link.href = resumeUrl;
+                                              link.target = '_blank';
+                                              link.rel = 'noopener noreferrer';
+                                              document.body.appendChild(link);
+                                              link.click();
+                                              document.body.removeChild(link);
+                                            } catch (error) {
+                                              setSnackbar({ open: true, message: 'Failed to open resume', severity: 'error' });
+                                            }
+                                          }}
+                                        >
                                           View Resume
                                         </Button>
                                         <Button
@@ -787,23 +885,21 @@ function StudentDashboard() {
                                   ) : (
                                     <Typography variant="body2" color="textSecondary">No documents uploaded</Typography>
                                   )}
-                                  <Box sx={{ mt: 2 }}>
-                                    <TextField
-                                      select
-                                      label="Document Type"
-                                      value={documentType}
-                                      onChange={(e) => setDocumentType(e.target.value)}
-                                      sx={{ mr: 2, minWidth: 150 }}
-                                      SelectProps={{
-                                        native: true,
-                                      }}
-                                    >
-                                      <option value="">Select Type</option>
-                                      <option value="Transcript">Transcript</option>
-                                      <option value="Certificate">Certificate</option>
-                                      <option value="Degree">Degree</option>
-                                      <option value="Other">Other</option>
-                                    </TextField>
+                                  <Box sx={{ mt: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                    <FormControl sx={{ minWidth: 150 }}>
+                                      <InputLabel>Document Type</InputLabel>
+                                      <Select
+                                        value={documentType}
+                                        onChange={(e) => setDocumentType(e.target.value)}
+                                        label="Document Type"
+                                      >
+                                        <MenuItem value="">Select Type</MenuItem>
+                                        <MenuItem value="transcript">Transcript</MenuItem>
+                                        <MenuItem value="degree">Degree Certificate</MenuItem>
+                                        <MenuItem value="id_proof">ID Proof</MenuItem>
+                                        <MenuItem value="other">Other</MenuItem>
+                                      </Select>
+                                    </FormControl>
                                     <Button
                                       variant="outlined"
                                       component="label"
@@ -921,18 +1017,38 @@ function StudentDashboard() {
 
                 {tab === 3 && (
                   <Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                      <Typography variant="h6">ATS Resume Analyzer</Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                      <Typography variant="h5" fontWeight="bold">
+                        ATS Resume Analyzer
+                      </Typography>
                       {profile?.resume && (
-                        <Button variant="contained" onClick={handleAnalyzeResume}>
+                        <Button
+                          variant="contained"
+                          onClick={handleAnalyzeResume}
+                          size="large"
+                          sx={{ px: 3 }}
+                        >
                           Analyze Resume
                         </Button>
                       )}
                     </Box>
                     {!profile?.resume ? (
-                      <Alert severity="warning">
-                        Please upload a resume first to use the ATS analyzer.
-                      </Alert>
+                      <Card sx={{ p: 4, textAlign: 'center' }}>
+                        <DescriptionIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+                        <Typography variant="h6" gutterBottom>
+                          No Resume Uploaded
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                          Please upload your resume in the Profile tab to use the ATS analyzer.
+                        </Typography>
+                        <Button
+                          variant="outlined"
+                          onClick={() => setTab(1)}
+                          startIcon={<PersonIcon />}
+                        >
+                          Go to Profile
+                        </Button>
+                      </Card>
                     ) : resumeAnalysis ? (
                       <Card
                         sx={{
@@ -940,61 +1056,187 @@ function StudentDashboard() {
                           background: 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)',
                           border: '2px solid',
                           borderColor: 'primary.light',
+                          overflow: 'hidden',
                         }}
                       >
                         <CardContent sx={{ p: 4 }}>
-                          <Box sx={{ textAlign: 'center', mb: 3 }}>
-                            <Typography
-                              variant="h3"
-                              fontWeight="bold"
-                              color="primary"
-                              gutterBottom
+                          {/* Score Section */}
+                          <Box sx={{ textAlign: 'center', mb: 4 }}>
+                            <Box
+                              sx={{
+                                width: 150,
+                                height: 150,
+                                borderRadius: '50%',
+                                background: `conic-gradient(from 0deg, ${
+                                  resumeAnalysis.ats_score >= 70
+                                    ? '#10b981'
+                                    : resumeAnalysis.ats_score >= 50
+                                    ? '#f59e0b'
+                                    : '#ef4444'
+                                } ${resumeAnalysis.ats_score * 3.6}deg, #e5e7eb ${resumeAnalysis.ats_score * 3.6}deg)`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                mx: 'auto',
+                                mb: 2,
+                                position: 'relative',
+                              }}
                             >
-                              {resumeAnalysis.ats_score}/100
-                            </Typography>
-                            <Typography variant="h6" color="text.secondary">
+                              <Box
+                                sx={{
+                                  width: 120,
+                                  height: 120,
+                                  borderRadius: '50%',
+                                  bgcolor: 'white',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <Typography
+                                  variant="h3"
+                                  fontWeight="bold"
+                                  color={
+                                    resumeAnalysis.ats_score >= 70
+                                      ? 'success.main'
+                                      : resumeAnalysis.ats_score >= 50
+                                      ? 'warning.main'
+                                      : 'error.main'
+                                  }
+                                >
+                                  {resumeAnalysis.ats_score}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  / 100
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Typography variant="h6" color="text.secondary" gutterBottom>
                               ATS Compatibility Score
                             </Typography>
+                            <Chip
+                              label={
+                                resumeAnalysis.ats_score >= 70
+                                  ? 'Excellent'
+                                  : resumeAnalysis.ats_score >= 50
+                                  ? 'Good'
+                                  : 'Needs Improvement'
+                              }
+                              color={
+                                resumeAnalysis.ats_score >= 70
+                                  ? 'success'
+                                  : resumeAnalysis.ats_score >= 50
+                                  ? 'warning'
+                                  : 'error'
+                              }
+                              sx={{ mt: 1 }}
+                            />
                           </Box>
-                          <Box sx={{ mt: 2 }}>
-                            <Typography variant="h6" gutterBottom>Feedback:</Typography>
-                            <Typography>{resumeAnalysis.feedback}</Typography>
+
+                          {/* Feedback Section */}
+                          <Box sx={{ mt: 4, mb: 3 }}>
+                            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              📝 Feedback
+                            </Typography>
+                            <Paper sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
+                              <Typography variant="body1">{resumeAnalysis.feedback}</Typography>
+                            </Paper>
                           </Box>
-                          {resumeAnalysis.keywords_found && (
-                            <Box sx={{ mt: 2 }}>
-                              <Typography variant="h6" gutterBottom>Keywords Found:</Typography>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {resumeAnalysis.keywords_found.split(',').map((keyword, idx) => (
-                                  <Chip key={idx} label={keyword.trim()} color="success" size="small" />
+
+                          {/* Keywords Found */}
+                          {resumeAnalysis.keywords_found && resumeAnalysis.keywords_found.trim() && (
+                            <Box sx={{ mt: 3, mb: 3 }}>
+                              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                ✅ Keywords Found
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                                {resumeAnalysis.keywords_found.split(',').filter(k => k.trim()).map((keyword, idx) => (
+                                  <Chip
+                                    key={idx}
+                                    label={keyword.trim()}
+                                    color="success"
+                                    size="medium"
+                                    sx={{ fontWeight: 500 }}
+                                  />
                                 ))}
                               </Box>
                             </Box>
                           )}
-                          {resumeAnalysis.keywords_missing && (
-                            <Box sx={{ mt: 2 }}>
-                              <Typography variant="h6" gutterBottom>Recommended Keywords:</Typography>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {resumeAnalysis.keywords_missing.split(',').map((keyword, idx) => (
-                                  <Chip key={idx} label={keyword.trim()} color="warning" size="small" />
+
+                          {/* Recommended Keywords */}
+                          {resumeAnalysis.keywords_missing && resumeAnalysis.keywords_missing.trim() && (
+                            <Box sx={{ mt: 3, mb: 3 }}>
+                              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                💡 Recommended Keywords
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                Consider adding these keywords to improve your ATS score:
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                                {resumeAnalysis.keywords_missing.split(',').filter(k => k.trim()).map((keyword, idx) => (
+                                  <Chip
+                                    key={idx}
+                                    label={keyword.trim()}
+                                    color="warning"
+                                    size="medium"
+                                    variant="outlined"
+                                    sx={{ fontWeight: 500 }}
+                                  />
                                 ))}
                               </Box>
                             </Box>
                           )}
+
+                          {/* Formatting Suggestions */}
                           {resumeAnalysis.formatting_issues && (
-                            <Box sx={{ mt: 2 }}>
-                              <Typography variant="h6" gutterBottom>Formatting Suggestions:</Typography>
-                              <Typography>{resumeAnalysis.formatting_issues}</Typography>
+                            <Box sx={{ mt: 3, mb: 3 }}>
+                              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                ✨ Formatting Suggestions
+                              </Typography>
+                              <Paper sx={{ p: 2, bgcolor: 'info.light', borderRadius: 2 }}>
+                                <Typography variant="body1" color="text.primary">
+                                  {resumeAnalysis.formatting_issues}
+                                </Typography>
+                              </Paper>
                             </Box>
                           )}
-                          <Typography variant="caption" color="textSecondary" sx={{ mt: 2, display: 'block' }}>
-                            Analyzed on: {new Date(resumeAnalysis.analyzed_at).toLocaleString()}
-                          </Typography>
+
+                          {/* Analysis Date */}
+                          <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Analyzed on: {new Date(resumeAnalysis.analyzed_at).toLocaleString()}
+                            </Typography>
+                            <Box sx={{ mt: 2 }}>
+                              <Button
+                                variant="outlined"
+                                onClick={handleAnalyzeResume}
+                                size="small"
+                              >
+                                Re-analyze Resume
+                              </Button>
+                            </Box>
+                          </Box>
                         </CardContent>
                       </Card>
                     ) : (
-                      <Alert severity="info">
-                        Click "Analyze Resume" to get your ATS compatibility score and feedback.
-                      </Alert>
+                      <Card sx={{ p: 6, textAlign: 'center' }}>
+                        <DescriptionIcon sx={{ fontSize: 80, color: 'primary.main', mb: 3, opacity: 0.7 }} />
+                        <Typography variant="h5" fontWeight="bold" gutterBottom>
+                          Ready to Analyze Your Resume?
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
+                          Get instant feedback on your resume with ATS compatibility scores, keyword analysis, and improvement suggestions.
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          size="large"
+                          onClick={handleAnalyzeResume}
+                          sx={{ px: 4 }}
+                        >
+                          Analyze Resume Now
+                        </Button>
+                      </Card>
                     )}
                   </Box>
                 )}
@@ -1056,7 +1298,7 @@ function StudentDashboard() {
                           const isRegistered = eventRegistrations.some(reg => reg.event?.id === event.id);
                           const isFull = event.max_participants && (event.registered_count || 0) >= event.max_participants;
                           const canRegister = event.registration_required && !isRegistered && !isFull && event.is_approved;
-                          
+
                           return (
                             <Grid item xs={12} md={6} key={event.id}>
                               <Card
@@ -1289,8 +1531,8 @@ function StudentDashboard() {
         onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >
