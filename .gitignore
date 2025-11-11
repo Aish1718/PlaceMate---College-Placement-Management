@@ -1,0 +1,6 @@
+# Ignore cache and temp files
+frontend/node_modules/.cache/
+
+# Optional: also ignore unnecessary build artifacts
+*.log
+*.tmp
