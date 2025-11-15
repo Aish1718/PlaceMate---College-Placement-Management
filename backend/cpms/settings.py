@@ -169,14 +169,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     # gpt
-    "https://placemate-college-placement-management-2i.onrender.com",
+    # "https://placemate-college-placement-management-2i.onrender.com",
 ]
 
 # CSRF for deployed frontend
 # gpt
-CSRF_TRUSTED_ORIGINS = [
-    "https://placemate-college-placement-management-2i.onrender.com",
-]
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://placemate-college-placement-management-2i.onrender.com",
+# ]
 
 
 CORS_ALLOW_CREDENTIALS = True
