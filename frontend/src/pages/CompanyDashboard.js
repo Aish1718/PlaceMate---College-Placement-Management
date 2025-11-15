@@ -288,8 +288,9 @@ function CompanyDashboard() {
         position="sticky"
         elevation={0}
         sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'primary.main',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          borderRadius: 0,
         }}
       >
         <Toolbar>
@@ -320,9 +321,9 @@ function CompanyDashboard() {
             <Paper
               sx={{
                 p: 4,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#192655',
+                borderRadius: 2,
                 color: 'white',
-                borderRadius: 3,
                 boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
                 mb: 3,
               }}
@@ -379,7 +380,7 @@ function CompanyDashboard() {
           <Grid item xs={12}>
             <Paper
               sx={{
-                borderRadius: 3,
+                borderRadius: 2,
                 overflow: 'hidden',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
               }}
@@ -960,5 +961,3 @@ function CompanyDashboard() {
 }
 
 export default CompanyDashboard;
-
-

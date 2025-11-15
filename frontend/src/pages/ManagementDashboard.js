@@ -177,8 +177,9 @@ function ManagementDashboard() {
         position="sticky"
         elevation={0}
         sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'primary.main',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          borderRadius: 0,
         }}
       >
         <Toolbar>
@@ -209,9 +210,9 @@ function ManagementDashboard() {
             <Paper
               sx={{
                 p: 4,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#192655',
                 color: 'white',
-                borderRadius: 3,
+                borderRadius: 2,
                 boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
                 mb: 3,
               }}
@@ -263,19 +264,19 @@ function ManagementDashboard() {
 
           <Grid item xs={12} md={3}>
             <Card
-              sx={{
-                borderRadius: 3,
-                background: 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)',
-                border: '1px solid',
-                borderColor: 'primary.light',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 12px 40px rgba(102, 126, 234, 0.2)',
-                },
-              }}
+              // sx={{
+              //   borderRadius: 3,
+              //   background: 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)',
+              //   border: '1px solid',
+              //   borderColor: 'primary.light',
+              //   transition: 'all 0.3s ease',
+              //   '&:hover': {
+              //     transform: 'translateY(-4px)',
+              //     boxShadow: '0 12px 40px rgba(102, 126, 234, 0.2)',
+              //   },
+              // }}
             >
-              <CardContent sx={{ p: 3 }}>
+              <CardContent>
                 <Typography color="text.secondary" fontWeight="600" gutterBottom>
                   Total Students
                 </Typography>
@@ -490,4 +491,3 @@ function ManagementDashboard() {
 }
 
 export default ManagementDashboard;
-

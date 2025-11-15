@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import loginBg from '../../src/images/login-portal.jpeg';
 import {
   Container,
   Paper,
@@ -40,7 +41,10 @@ function Login() {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: '#192655',
+        backgroundImage: `url(${loginBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -53,7 +57,7 @@ function Login() {
           sx={{
             p: 5,
             width: '100%',
-            borderRadius: 4,
+            borderRadius: 2,
             background: 'rgba(255, 255, 255, 0.98)',
             backdropFilter: 'blur(10px)',
           }}
@@ -122,9 +126,9 @@ function Login() {
                 mb: 3,
                 py: 1.5,
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'primary.main',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #5568d3 0%, #653a8f 100%)',
+                  background: 'primary.main',
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 20px rgba(102, 126, 234, 0.4)',
                 },
@@ -137,7 +141,7 @@ function Login() {
               <Link
                 to="/register"
                 style={{
-                  color: '#667eea',
+                  color: '#304173',
                   textDecoration: 'none',
                   fontWeight: 600,
                 }}
@@ -153,5 +157,3 @@ function Login() {
 }
 
 export default Login;
-
-

@@ -368,8 +368,9 @@ function StudentDashboard() {
         position="sticky"
         elevation={0}
         sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'primary.main',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          borderRadius: 0,
         }}
       >
         <Toolbar>
@@ -400,9 +401,9 @@ function StudentDashboard() {
             <Paper
               sx={{
                 p: 4,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#192655',
                 color: 'white',
-                borderRadius: 3,
+                borderRadius: 2,
                 boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
               }}
             >
@@ -604,6 +605,7 @@ function StudentDashboard() {
                                   mt: 'auto',
                                   borderRadius: 2,
                                   py: 1.2,
+                                  color: "white !important",
                                   background: applications.some((app) => app.job?.id === job.id)
                                     ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                                     : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -1613,5 +1615,3 @@ function StudentDashboard() {
 }
 
 export default StudentDashboard;
-
-

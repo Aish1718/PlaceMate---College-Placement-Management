@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import loginBg from '../../src/images/login-portal.jpeg';
 import {
   Container,
   Paper,
@@ -71,7 +72,7 @@ function Register() {
       <Box
         sx={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: '#192655',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -114,7 +115,10 @@ function Register() {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: '#192655',
+        backgroundImage: `url(${loginBg})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -126,7 +130,7 @@ function Register() {
           elevation={24}
           sx={{
             p: 5,
-            borderRadius: 4,
+            borderRadius: 2,
             background: 'rgba(255, 255, 255, 0.98)',
             backdropFilter: 'blur(10px)',
           }}
@@ -283,9 +287,9 @@ function Register() {
                 mb: 3,
                 py: 1.5,
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#192655',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #5568d3 0%, #653a8f 100%)',
+                  background: '#192655',
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 20px rgba(102, 126, 234, 0.4)',
                 },
@@ -298,7 +302,7 @@ function Register() {
               <Link
                 to="/login"
                 style={{
-                  color: '#667eea',
+                  color: '#304173',
                   textDecoration: 'none',
                   fontWeight: 600,
                 }}
@@ -314,5 +318,3 @@ function Register() {
 }
 
 export default Register;
-
-

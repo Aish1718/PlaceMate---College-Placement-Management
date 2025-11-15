@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import heroVideo from '../../src/images/UpdatedVideo.mp4';
 import {
   Box,
   Container,
@@ -121,7 +122,7 @@ function LandingPage() {
         id="home"
         sx={{
           // background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          backgroundImage: 'image-url(https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80)',
+          // backgroundImage: 'url("https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80")',
           color: 'white',
           py: 12,
           textAlign: 'center',
@@ -135,14 +136,44 @@ function LandingPage() {
   },
         }}
       >
-        <Container maxWidth="md">
+        {/* Background Video */}
+  <video
+  autoPlay
+  loop
+  muted
+  playsInline
+  style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    zIndex: 1,   // ok
+  }}
+>
+    <source src={heroVideo} type="video/mp4" />
+  </video>
+
+  {/* Overlay */}
+  <Box
+    sx={{
+      position: 'absolute',
+      inset: 0,
+      background: 'rgba(25, 38, 85, 0.45)',
+      zIndex: 1,
+    }}
+  />
+
+        <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2 }}>
           <Fade in timeout={1000}>
             <Box>
               <Typography variant="h2" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
-                Welcome to placeMate
+                Welcome to PlaceMate
               </Typography>
               <Typography variant="h5" sx={{ mb: 4, opacity: 0.9 }}>
-                Streamline Your College Placement Process
+                Connect. Apply. Get hired.
+                A modern, all-in-one platform for every placement need.
               </Typography>
               <Typography variant="body1" sx={{ mb: 6, fontSize: '1.1rem', opacity: 0.8, maxWidth: '600px', mx: 'auto' }}>
                 Connect students, coordinators, and companies in one efficient platform.
@@ -185,7 +216,16 @@ function LandingPage() {
               <Button
                 onClick={() => scrollToSection('features')}
                 sx={{ color: 'white', mt: 4 }}
-                endIcon={<ArrowDownwardIcon />}
+                endIcon={<ArrowDownwardIcon
+                sx={{
+        animation: 'bounce 1.5s infinite',
+        '@keyframes bounce': {
+          '0%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(4px)' },
+          '100%': { transform: 'translateY(0)' },
+        },
+      }}
+                />}
               >
                 Learn More
               </Button>
@@ -350,7 +390,7 @@ function LandingPage() {
               <Box sx={{ mt: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                   <EmailIcon sx={{ mr: 2, color: 'primary.main' }} />
-                  <Typography>support@placemate.com</Typography>
+                  <Typography>rnsit@placemate.com</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                   <PhoneIcon sx={{ mr: 2, color: 'primary.main' }} />
@@ -358,7 +398,7 @@ function LandingPage() {
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <LocationOnIcon sx={{ mr: 2, color: 'primary.main' }} />
-                  <Typography>123 College Avenue, Education City, EC 12345</Typography>
+                  <Typography>RNS Institute of Technology, Dr. Vishnuvardhana Road, R R Nagar Post, Channasandra, Bengaluru - 560 098.</Typography>
                 </Box>
               </Box>
             </Card>
@@ -403,45 +443,92 @@ function LandingPage() {
       </Container>
 
       {/* Footer */}
-      <Box sx={{ bgcolor: 'grey.900', color: 'white', py: 4, mt: 8 }}>
+      <Box sx={{ bgcolor: '#CA7842', color: 'white', py: 4, mt: 8 }}>
         <Container maxWidth="lg">
           <Grid container spacing={4}>
             <Grid item xs={12} md={4}>
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
+              <SchoolIcon sx={{ mr: 2, color: '#192655', fontSize: 32 }} />
+          <Typography
+            variant="h6"
+            sx={{
+              flexGrow: 1,
+              fontWeight: 700,
+              color: '#192655',
+              cursor: 'pointer',
+            }}
+            onClick={() => scrollToSection('home')}
+          >
+            PlaceMate
+          </Typography>
+              </div>
+              {/* <Typography variant="h6" fontWeight="bold" color="primary.main" gutterBottom>
                 PlaceMate
-              </Typography>
-              <Typography variant="body2" color="grey.400">
+              </Typography> */}
+              <Typography variant="body2" color="background.default">
                 Streamlining college placement processes for better outcomes.
               </Typography>
             </Grid>
             <Grid item xs={12} md={4}>
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
+              <Typography variant="h6" fontWeight="bold" color="primary.main" gutterBottom>
                 Quick Links
               </Typography>
-              <Box>
-                <Button color="inherit" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+              <Box sx={{display: "flex", flexDirection: "row", gap: "24px", alignItems: "center"}}>
+                <Button color="inherit" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} sx={{
+    background: "transparent",
+    padding: "0px",
+    fontWeight: 400,
+    boxShadow: "none",
+    minWidth: "auto",
+    "&:hover": {
+      background: "transparent",
+      textDecoration: "underline",
+      boxShadow: "none",
+    }
+  }}>
                   Home
                 </Button>
-                <Button color="inherit" onClick={() => navigate('/login')}>
+                <Button color="inherit" onClick={() => navigate('/login')} sx={{
+    padding: "0px",
+    fontWeight: 400,
+    boxShadow: "none",
+    minWidth: "auto",
+    "&:hover": {
+      background: "transparent",
+      textDecoration: "underline",
+      boxShadow: "none",
+    }
+  }}>
                   Login
                 </Button>
-                <Button color="inherit" onClick={() => navigate('/register')}>
+                <Button color="inherit" onClick={() => navigate('/register')} sx={{
+    background: "transparent",
+    padding: "0px",
+    fontWeight: 400,
+    boxShadow: "none",
+    minWidth: "auto",
+    "&:hover": {
+      background: "transparent",
+      textDecoration: "underline",
+      boxShadow: "none",
+    }
+  }}>
                   Register
                 </Button>
               </Box>
             </Grid>
             <Grid item xs={12} md={4}>
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
+              <Typography variant="h6" fontWeight="bold" color="primary.main" gutterBottom>
                 Contact
               </Typography>
-              <Typography variant="body2" color="grey.400">
-                Email: support@placemate.com<br />
+              <Typography variant="body2" color="background.default">
+                Email: rnsit@placemate.com<br />
                 Phone: +1 (555) 123-4567
               </Typography>
             </Grid>
           </Grid>
           <Box sx={{ mt: 4, pt: 4, borderTop: 1, borderColor: 'grey.800', textAlign: 'center' }}>
-            <Typography variant="body2" color="grey.400">
+            <Typography variant="body2" color="background.default">
               © {new Date().getFullYear()} placeMate. All rights reserved.
             </Typography>
           </Box>
