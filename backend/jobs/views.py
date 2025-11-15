@@ -15,19 +15,21 @@ class JobPostingViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'description', 'required_skills', 'department']
     ordering_fields = ['created_at', 'application_deadline', 'salary_min']
     ordering = ['-created_at']
-    
+
     def get_queryset(self):
         user = self.request.user
         queryset = JobPosting.objects.all()
-        
+
         if user.is_superuser:
             # Admins see all jobs
             return queryset
         if user.role == 'student':
-            # Students see only approved and active jobs
-            queryset = queryset.filter(is_active=True, is_approved=True)
+            # Students see all approved jobs (both active and inactive)
+            # This allows them to see jobs they applied to even if they're no longer active
+            queryset = queryset.filter(is_approved=True)
         elif user.role == 'company':
-            # Companies see their own jobs
+            # Companies see ALL their own jobs (both active/inactive and approved/pending)
+            # No filtering by is_active or is_approved - companies need to see all their job postings
             try:
                 company = Company.objects.get(user=user)
                 queryset = queryset.filter(company=company)
@@ -38,31 +40,35 @@ class JobPostingViewSet(viewsets.ModelViewSet):
             pass
         else:
             queryset = queryset.none()
-        
+
         return queryset
-    
+
     def get_serializer_class(self):
         if self.action == 'create':
             return JobPostingCreateSerializer
         return JobPostingSerializer
-    
+
     def perform_create(self, serializer):
         if self.request.user.role == 'company':
-            company = Company.objects.get(user=self.request.user)
-            serializer.save(company=company)
+            try:
+                company = Company.objects.get(user=self.request.user)
+                serializer.save(company=company)
+            except Company.DoesNotExist:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({'company': 'Company profile not found. Please create your company profile first.'})
         else:
             serializer.save()
-    
+
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         if request.user.role not in ['placement_coordinator', 'college_management'] and not request.user.is_superuser:
             return Response({'error': 'Permission denied'}, status=403)
-        
+
         job = self.get_object()
         was_approved = job.is_approved
         job.is_approved = True
         job.save()
-        
+
         # Notify all students when job is approved (only if it wasn't already approved)
         if not was_approved:
             from django.contrib.auth import get_user_model
@@ -79,14 +85,14 @@ class JobPostingViewSet(viewsets.ModelViewSet):
                     link=f"/dashboard"
                 ))
             Notification.objects.bulk_create(notifications)
-        
+
         return Response({'message': 'Job posting approved'})
-    
+
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         if request.user.role not in ['placement_coordinator', 'college_management'] and not request.user.is_superuser:
             return Response({'error': 'Permission denied'}, status=403)
-        
+
         job = self.get_object()
         job.is_approved = False
         job.is_active = False

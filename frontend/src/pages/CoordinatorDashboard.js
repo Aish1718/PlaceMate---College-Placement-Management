@@ -651,7 +651,7 @@ function CoordinatorDashboard() {
                             <TableRow>
                               <TableCell>Company Name</TableCell>
                               <TableCell>Industry</TableCell>
-                              <TableCell>Location</TableCell>
+                              <TableCell>Address</TableCell>
                               <TableCell>Website</TableCell>
                               <TableCell>Contact Email</TableCell>
                               <TableCell>Total Jobs</TableCell>
@@ -662,7 +662,7 @@ function CoordinatorDashboard() {
                               <TableRow key={company.id}>
                                 <TableCell>{company.company_name}</TableCell>
                                 <TableCell>{company.industry || 'N/A'}</TableCell>
-                                <TableCell>{company.location || 'N/A'}</TableCell>
+                                <TableCell>{company.address || 'N/A'}</TableCell>
                                 <TableCell>
                                   {company.website ? (
                                     <a href={company.website} target="_blank" rel="noopener noreferrer">
@@ -672,7 +672,7 @@ function CoordinatorDashboard() {
                                     'N/A'
                                   )}
                                 </TableCell>
-                                <TableCell>{company.contact_email || 'N/A'}</TableCell>
+                                <TableCell>{company.user_email || 'N/A'}</TableCell>
                                 <TableCell>
                                   {jobs.filter((job) => job.company?.id === company.id).length}
                                 </TableCell>
@@ -746,6 +746,170 @@ function CoordinatorDashboard() {
                                       onClick={() => handleApproveJob(job.id)}
                                     >
                                       Approve
+                                    </Button>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
+                  </Box>
+                )}
+
+                {tab === 6 && (
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                      <Typography variant="h6" gutterBottom>
+                        Recruitment Drives ({recruitmentDrives.length})
+                      </Typography>
+                      <Button variant="contained" onClick={() => setOpenDriveDialog(true)}>
+                        Create Drive
+                      </Button>
+                    </Box>
+                    {recruitmentDrives.length === 0 ? (
+                      <Alert severity="info">No recruitment drives found</Alert>
+                    ) : (
+                      <TableContainer>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Title</TableCell>
+                              <TableCell>Company</TableCell>
+                              <TableCell>Date & Time</TableCell>
+                              <TableCell>Location</TableCell>
+                              <TableCell>Status</TableCell>
+                              <TableCell>Actions</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {recruitmentDrives.map((drive) => (
+                              <TableRow key={drive.id}>
+                                <TableCell>{drive.title}</TableCell>
+                                <TableCell>{drive.company?.company_name || 'N/A'}</TableCell>
+                                <TableCell>{new Date(drive.drive_date).toLocaleString()}</TableCell>
+                                <TableCell>{drive.location}</TableCell>
+                                <TableCell>
+                                  <Chip
+                                    label={drive.is_approved ? 'Approved' : 'Pending Approval'}
+                                    color={drive.is_approved ? 'success' : 'warning'}
+                                    size="small"
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  {!drive.is_approved && (
+                                    <Button
+                                      variant="contained"
+                                      color="success"
+                                      size="small"
+                                      onClick={() => handleApproveDrive(drive.id)}
+                                      sx={{ mr: 1 }}
+                                    >
+                                      Approve
+                                    </Button>
+                                  )}
+                                  {!drive.is_approved && (
+                                    <Button
+                                      variant="outlined"
+                                      color="error"
+                                      size="small"
+                                      onClick={async () => {
+                                        if (window.confirm('Are you sure you want to reject this drive?')) {
+                                          try {
+                                            await api.post(`/recruitment-drives/drives/${drive.id}/reject/`);
+                                            fetchData();
+                                            alert('Recruitment drive rejected');
+                                          } catch (error) {
+                                            alert('Failed to reject drive');
+                                          }
+                                        }
+                                      }}
+                                    >
+                                      Reject
+                                    </Button>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
+                  </Box>
+                )}
+
+                {tab === 7 && (
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                      <Typography variant="h6" gutterBottom>
+                        Campus Events ({campusEvents.length})
+                      </Typography>
+                      <Button variant="contained" onClick={() => setOpenEventDialog(true)}>
+                        Create Event
+                      </Button>
+                    </Box>
+                    {campusEvents.length === 0 ? (
+                      <Alert severity="info">No campus events found</Alert>
+                    ) : (
+                      <TableContainer>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Title</TableCell>
+                              <TableCell>Type</TableCell>
+                              <TableCell>Company</TableCell>
+                              <TableCell>Date & Time</TableCell>
+                              <TableCell>Location</TableCell>
+                              <TableCell>Status</TableCell>
+                              <TableCell>Actions</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {campusEvents.map((event) => (
+                              <TableRow key={event.id}>
+                                <TableCell>{event.title}</TableCell>
+                                <TableCell>{event.event_type?.replace('_', ' ')}</TableCell>
+                                <TableCell>{event.company?.company_name || 'N/A'}</TableCell>
+                                <TableCell>{new Date(event.event_date).toLocaleString()}</TableCell>
+                                <TableCell>{event.location}</TableCell>
+                                <TableCell>
+                                  <Chip
+                                    label={event.is_approved ? 'Approved' : 'Pending Approval'}
+                                    color={event.is_approved ? 'success' : 'warning'}
+                                    size="small"
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  {!event.is_approved && (
+                                    <Button
+                                      variant="contained"
+                                      color="success"
+                                      size="small"
+                                      onClick={() => handleApproveEvent(event.id)}
+                                      sx={{ mr: 1 }}
+                                    >
+                                      Approve
+                                    </Button>
+                                  )}
+                                  {!event.is_approved && (
+                                    <Button
+                                      variant="outlined"
+                                      color="error"
+                                      size="small"
+                                      onClick={async () => {
+                                        if (window.confirm('Are you sure you want to reject this event?')) {
+                                          try {
+                                            await api.post(`/events/events/${event.id}/reject/`);
+                                            fetchData();
+                                            alert('Event rejected');
+                                          } catch (error) {
+                                            alert('Failed to reject event');
+                                          }
+                                        }
+                                      }}
+                                    >
+                                      Reject
                                     </Button>
                                   )}
                                 </TableCell>

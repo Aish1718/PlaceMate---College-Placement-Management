@@ -15,7 +15,7 @@ import PrivateRoute from './components/PrivateRoute';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#6366f1',
+      main: '#192655',
       light: '#818cf8',
       dark: '#4f46e5',
       contrastText: '#ffffff',
@@ -26,7 +26,7 @@ const theme = createTheme({
       dark: '#db2777',
     },
     background: {
-      default: '#f8fafc',
+      default: '#E7E6E1',
       paper: '#ffffff',
     },
     text: {
@@ -167,4 +167,3 @@ function App() {
 }
 
 export default App;
-

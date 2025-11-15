@@ -78,24 +78,25 @@ function LandingPage() {
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor: 'white',
+          bgcolor: '#E7E6E1',
           color: 'text.primary',
           boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+          borderRadius: '0px',
         }}
       >
         <Toolbar>
-          <SchoolIcon sx={{ mr: 2, color: 'primary.main', fontSize: 32 }} />
+          <SchoolIcon sx={{ mr: 2, color: '#192655', fontSize: 32 }} />
           <Typography
             variant="h6"
             sx={{
               flexGrow: 1,
               fontWeight: 700,
-              color: 'primary.main',
+              color: '#192655',
               cursor: 'pointer',
             }}
             onClick={() => scrollToSection('home')}
           >
-            placeMate
+            PlaceMate
           </Typography>
           <Button color="inherit" onClick={() => scrollToSection('features')} sx={{ mr: 2 }}>
             Features
@@ -119,12 +120,19 @@ function LandingPage() {
       <Box
         id="home"
         sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          // background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          backgroundImage: 'image-url(https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80)',
           color: 'white',
           py: 12,
           textAlign: 'center',
           position: 'relative',
           overflow: 'hidden',
+          '&::before': {
+    background: 'rgba(223,83,51,0.2)', // dark
+    content: '""',
+    position: 'absolute',
+    inset: 0,
+  },
         }}
       >
         <Container maxWidth="md">
@@ -400,7 +408,7 @@ function LandingPage() {
           <Grid container spacing={4}>
             <Grid item xs={12} md={4}>
               <Typography variant="h6" fontWeight="bold" gutterBottom>
-                placeMate
+                PlaceMate
               </Typography>
               <Typography variant="body2" color="grey.400">
                 Streamlining college placement processes for better outcomes.
@@ -470,4 +478,3 @@ function LandingPage() {
 }
 
 export default LandingPage;
-

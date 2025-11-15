@@ -136,8 +136,9 @@ function StudentDashboard() {
         }
       }
       const allJobs = jobsRes.data.results || jobsRes.data;
-      // Filter to only show approved and active jobs for students
-      const filteredJobs = allJobs.filter(job => job.is_active && job.is_approved);
+      // Filter to only show approved jobs for students (include both active and inactive)
+      // This ensures students can see jobs they applied to even if they're no longer active
+      const filteredJobs = allJobs.filter(job => job.is_approved);
       setJobs(filteredJobs);
       setApplications(applicationsRes.data.results || applicationsRes.data);
       setNotifications(notificationsRes.data.results || notificationsRes.data);
@@ -239,39 +240,52 @@ function StudentDashboard() {
   const handleSaveProfile = async () => {
     try {
       const profileId = profile?.id;
+      const formData = new FormData();
+
+      // Add all form fields (excluding files)
+      Object.keys(profileForm).forEach(key => {
+        if (key !== 'profile_picture' && key !== 'resume') {
+          const value = profileForm[key];
+          // Include the value if it's not null or undefined (allow empty strings, 0, false)
+          if (value !== null && value !== undefined) {
+            formData.append(key, value);
+          }
+        }
+      });
+
+      // Add files if they exist
+      if (resumeFile) {
+        formData.append('resume', resumeFile);
+      }
+      if (profilePictureFile) {
+        formData.append('profile_picture', profilePictureFile);
+      }
+
       if (!profileId) {
         // Create new profile
-        const formData = new FormData();
-        Object.keys(profileForm).forEach(key => {
-          if (key !== 'profile_picture' && profileForm[key] !== null && profileForm[key] !== undefined && profileForm[key] !== '') {
-            formData.append(key, profileForm[key]);
-          }
-        });
-        if (resumeFile) formData.append('resume', resumeFile);
-        if (profilePictureFile) formData.append('profile_picture', profilePictureFile);
-
         await api.post('/students/profiles/', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
-        // Update existing profile
-        const formData = new FormData();
-        Object.keys(profileForm).forEach(key => {
-          if (profileForm[key]) formData.append(key, profileForm[key]);
-        });
-        if (resumeFile) formData.append('resume', resumeFile);
-
+        // Update existing profile - use PATCH for partial update
         await api.patch(`/students/profiles/${profileId}/`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       }
+
       setProfileEditMode(false);
       setResumeFile(null);
       setProfilePictureFile(null);
       fetchData();
       setSnackbar({ open: true, message: 'Profile saved successfully!', severity: 'success' });
     } catch (error) {
-      setSnackbar({ open: true, message: error.response?.data?.detail || 'Failed to save profile', severity: 'error' });
+      console.error('Profile save error:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.detail ||
+                          error.response?.data?.error ||
+                          Object.values(error.response?.data || {}).flat().join(', ') ||
+                          'Failed to save profile';
+      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
     }
   };
 
@@ -574,6 +588,14 @@ function StudentDashboard() {
                                     variant="outlined"
                                   />
                                 )}
+                                {!job.is_active && (
+                                  <Chip
+                                    label="Closed"
+                                    size="small"
+                                    color="default"
+                                    variant="outlined"
+                                  />
+                                )}
                               </Box>
                               <Button
                                 variant="contained"
@@ -791,7 +813,54 @@ function StudentDashboard() {
                             }}
                           >
                             <CardContent sx={{ p: 4 }}>
-                              <Grid container spacing={2}>
+                              <Grid container spacing={3}>
+                                {/* Profile Picture */}
+                                <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                  <Box
+                                    sx={{
+                                      position: 'relative',
+                                      width: 150,
+                                      height: 150,
+                                      borderRadius: '50%',
+                                      overflow: 'hidden',
+                                      border: '4px solid',
+                                      borderColor: 'primary.main',
+                                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                                    }}
+                                  >
+                                    {profile.profile_picture ? (
+                                      <img
+                                        src={
+                                          profile.profile_picture.startsWith('http')
+                                            ? profile.profile_picture
+                                            : profile.profile_picture.startsWith('/media/')
+                                            ? `http://localhost:8000${profile.profile_picture}`
+                                            : `http://localhost:8000/media/${profile.profile_picture}`
+                                        }
+                                        alt="Profile"
+                                        style={{
+                                          width: '100%',
+                                          height: '100%',
+                                          objectFit: 'cover',
+                                        }}
+                                      />
+                                    ) : (
+                                      <Box
+                                        sx={{
+                                          width: '100%',
+                                          height: '100%',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          bgcolor: 'primary.light',
+                                          color: 'primary.contrastText',
+                                        }}
+                                      >
+                                        <PersonIcon sx={{ fontSize: 60 }} />
+                                      </Box>
+                                    )}
+                                  </Box>
+                                </Grid>
                                 <Grid item xs={12} md={6}>
                                   <Typography><strong>Enrollment:</strong> {profile.enrollment_number}</Typography>
                                   <Typography><strong>Department:</strong> {profile.department}</Typography>

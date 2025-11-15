@@ -2,7 +2,6 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 from .models import StudentProfile, AcademicDocument, ResumeAnalysis
 from .serializers import (
     StudentProfileSerializer,
@@ -36,9 +35,15 @@ class StudentProfileViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def me(self, request):
-        profile = get_object_or_404(StudentProfile, user=request.user)
-        serializer = self.get_serializer(profile)
-        return Response(serializer.data)
+        try:
+            profile = StudentProfile.objects.get(user=request.user)
+            serializer = self.get_serializer(profile)
+            return Response(serializer.data)
+        except StudentProfile.DoesNotExist:
+            return Response(
+                {'detail': 'Student profile not found. Please create a student profile first.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
     @action(detail=True, methods=['post'])
     def upload_document(self, request, pk=None):

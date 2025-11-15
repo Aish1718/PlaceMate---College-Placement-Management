@@ -106,18 +106,32 @@ function CompanyDashboard() {
         api.get('/dashboard/stats/'),
         api.get('/jobs/'),
         api.get('/applications/'),
-        api.get('/companies/me/'),
+        api.get('/companies/me/').catch((err) => {
+          // If company profile doesn't exist, return null
+          if (err.response?.status === 404) {
+            return { data: null };
+          }
+          throw err;
+        }),
         api.get('/recruitment-drives/drives/').catch(() => ({ data: { results: [], data: [] } })),
         api.get('/events/events/').catch(() => ({ data: { results: [], data: [] } })),
       ]);
       setStats(statsRes.data);
-      setJobs(jobsRes.data.results || jobsRes.data);
-      setApplications(applicationsRes.data.results || applicationsRes.data);
+      // Ensure we handle both paginated and non-paginated responses
+      const jobsData = jobsRes.data?.results || jobsRes.data || [];
+      const applicationsData = applicationsRes.data?.results || applicationsRes.data || [];
+      setJobs(Array.isArray(jobsData) ? jobsData : []);
+      setApplications(Array.isArray(applicationsData) ? applicationsData : []);
       setCompany(companyRes.data);
       setRecruitmentDrives(drivesRes.data.results || drivesRes.data || []);
       setCampusEvents(eventsRes.data.results || eventsRes.data || []);
+
+      // Debug logging
+      console.log('Fetched jobs:', jobsData.length);
+      console.log('Fetched applications:', applicationsData.length);
     } catch (error) {
       console.error('Error fetching data:', error);
+      console.error('Error details:', error.response?.data);
     } finally {
       setLoading(false);
     }
@@ -142,7 +156,11 @@ function CompanyDashboard() {
       fetchData();
       alert('Job posted successfully!');
     } catch (error) {
-      alert('Failed to create job posting');
+      const errorMessage = error.response?.data?.company?.[0] ||
+                          error.response?.data?.error ||
+                          error.response?.data?.message ||
+                          'Failed to create job posting. Please ensure your company profile is created.';
+      alert(errorMessage);
     }
   };
 
