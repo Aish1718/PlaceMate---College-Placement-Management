@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
 Script to create test users for all roles
+This script only runs on first installation when there are no users in the database.
 Run with: python manage.py shell < create_test_users.py
 Or: python manage.py shell
 Then copy-paste the code below
@@ -8,6 +9,7 @@ Then copy-paste the code below
 
 import os
 import django
+import sys
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cpms.settings')
 django.setup()
@@ -16,9 +18,23 @@ from users.models import User
 from students.models import StudentProfile
 from companies.models import Company
 
-# Delete existing test users if they exist
-User.objects.filter(username__in=['student1', 'company1', 'coordinator1', 'management1', 'admin']).delete()
-print("Cleaned up existing test users...")
+# Check if any users exist in the database
+user_count = User.objects.count()
+
+if user_count > 0:
+    print("=" * 60)
+    print("SKIPPING TEST USER CREATION")
+    print("=" * 60)
+    print(f"Found {user_count} existing user(s) in the database.")
+    print("This script only runs on first installation when there are no users.")
+    print("If you want to recreate test users, please delete existing users first.")
+    print()
+    sys.exit(0)
+
+print("=" * 60)
+print("FIRST INSTALLATION DETECTED")
+print("Creating test users for all roles...")
+print("=" * 60)
 print()
 
 # Create Student User
@@ -129,4 +145,3 @@ print()
 print("=" * 60)
 print("ALL TEST USERS CREATED SUCCESSFULLY!")
 print("=" * 60)
-
