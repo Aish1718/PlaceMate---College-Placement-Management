@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
-  // baseURL: 'https://placemate-college-placement-management-1.onrender.com/api',
+  // baseURL: 'http://localhost:8000/api',
+  baseURL: 'https://placemate-college-placement-management-1.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -35,7 +35,7 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem('refresh_token');
         // 'http://localhost:8000/api/auth/login/refresh/'
         // `${process.env.REACT_APP_API_URL}/api/auth/login/refresh/`
-        const response = await axios.post('http://localhost:8000/api/auth/login/refresh/', {
+        const response = await axios.post( `${process.env.REACT_APP_API_URL}/api/auth/login/refresh/`, {
           refresh: refreshToken,
         });
 
