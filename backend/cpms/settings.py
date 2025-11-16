@@ -164,19 +164,55 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
+
+
+
+
 # CORS Settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    # gpt
     "https://placemate-college-placement-management-2.onrender.com",
 ]
 
-# CSRF for deployed frontend
-# gpt
-CSRF_TRUSTED_ORIGINS = [
-    "https://placemate-college-placement-management-2.onrender.com",
-]
-
-
+# Allow credentials for CORS requests
 CORS_ALLOW_CREDENTIALS = True
+
+# Additional CORS settings for production
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# # CORS Settings
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+#     # gpt
+#     "https://placemate-college-placement-management-2.onrender.com",
+# ]
+
+# # CSRF for deployed frontend
+# # gpt
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://placemate-college-placement-management-2.onrender.com",
+# ]
+
+
+# CORS_ALLOW_CREDENTIALS = True
