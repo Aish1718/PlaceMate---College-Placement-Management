@@ -1,20 +1,35 @@
 import axios from 'axios';
 
+// Determine base URL based on environment
+const getBaseURL = () => {
+  // Check if we're in production (on Render)
+  if (window.location.hostname.includes('onrender.com')) {
+    return 'https://placemate-college-placement-management-1.onrender.com/api';
+  }
+  // Default to localhost for development
+  return process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+};
+
 const api = axios.create({
-  // baseURL: 'http://localhost:8000/api',
-  baseURL: 'https://placemate-college-placement-management-1.onrender.com/api',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor to add token
+// Request interceptor to add token and handle multipart/form-data
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Remove Content-Type header for FormData to let axios set it with boundary
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (error) => {
@@ -33,9 +48,8 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem('refresh_token');
-        // 'http://localhost:8000/api/auth/login/refresh/'
-        // `${process.env.REACT_APP_API_URL}/api/auth/login/refresh/`
-        const response = await axios.post( `${process.env.REACT_APP_API_URL}/api/auth/login/refresh/`, {
+        const baseURL = getBaseURL();
+        const response = await axios.post(`${baseURL}/auth/login/refresh/`, {
           refresh: refreshToken,
         });
 

@@ -170,13 +170,14 @@ function StudentDashboard() {
       // Update profile with resume
       const formData2 = new FormData();
       formData2.append('resume', file);
+      // Add other profile fields, excluding file fields (they're handled separately)
       Object.keys(profileForm).forEach(key => {
-        if (profileForm[key]) formData2.append(key, profileForm[key]);
+        if (key !== 'profile_picture' && key !== 'resume' && profileForm[key]) {
+          formData2.append(key, profileForm[key]);
+        }
       });
 
-      await api.patch(`/students/profiles/${profileId}/`, formData2, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await api.patch(`/students/profiles/${profileId}/`, formData2);
       // Clear old resume analysis when new resume is uploaded
       setResumeAnalysis(null);
       fetchData();
@@ -203,9 +204,7 @@ function StudentDashboard() {
         return;
       }
 
-      await api.post(`/students/profiles/${profileId}/upload_document/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await api.post(`/students/profiles/${profileId}/upload_document/`, formData);
       setDocumentFile(null);
       setDocumentType('');
       fetchData();
@@ -263,14 +262,10 @@ function StudentDashboard() {
 
       if (!profileId) {
         // Create new profile
-        await api.post('/students/profiles/', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api.post('/students/profiles/', formData);
       } else {
         // Update existing profile - use PATCH for partial update
-        await api.patch(`/students/profiles/${profileId}/`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api.patch(`/students/profiles/${profileId}/`, formData);
       }
 
       setProfileEditMode(false);
@@ -288,6 +283,128 @@ function StudentDashboard() {
       setSnackbar({ open: true, message: errorMessage, severity: 'error' });
     }
   };
+
+  //     // Update profile with resume
+  //     const formData2 = new FormData();
+  //     formData2.append('resume', file);
+  //     Object.keys(profileForm).forEach(key => {
+  //       if (profileForm[key]) formData2.append(key, profileForm[key]);
+  //     });
+
+  //     await api.patch(`/students/profiles/${profileId}/`, formData2, {
+  //       headers: { 'Content-Type': 'multipart/form-data' },
+  //     });
+  //     // Clear old resume analysis when new resume is uploaded
+  //     setResumeAnalysis(null);
+  //     fetchData();
+  //     setSnackbar({ open: true, message: 'Resume uploaded successfully! Please analyze again for updated results.', severity: 'success' });
+  //   } catch (error) {
+  //     setSnackbar({ open: true, message: 'Failed to upload resume', severity: 'error' });
+  //   }
+  // };
+
+  // const handleDocumentUpload = async () => {
+  //   if (!documentFile || !documentType) {
+  //     setSnackbar({ open: true, message: 'Please select a document and type', severity: 'warning' });
+  //     return;
+  //   }
+
+  //   const formData = new FormData();
+  //   formData.append('document', documentFile);
+  //   formData.append('document_type', documentType);
+
+  //   try {
+  //     const profileId = profile?.id;
+  //     if (!profileId) {
+  //       setSnackbar({ open: true, message: 'Please create your profile first', severity: 'warning' });
+  //       return;
+  //     }
+
+  //     await api.post(`/students/profiles/${profileId}/upload_document/`, formData, {
+  //       headers: { 'Content-Type': 'multipart/form-data' },
+  //     });
+  //     setDocumentFile(null);
+  //     setDocumentType('');
+  //     fetchData();
+  //     setSnackbar({ open: true, message: 'Document uploaded successfully!', severity: 'success' });
+  //   } catch (error) {
+  //     setSnackbar({ open: true, message: 'Failed to upload document', severity: 'error' });
+  //   }
+  // };
+
+  // const handleAnalyzeResume = async () => {
+  //   if (!profile?.id) {
+  //     setSnackbar({ open: true, message: 'Please create your profile first', severity: 'warning' });
+  //     return;
+  //   }
+
+  //   if (!profile.resume) {
+  //     setSnackbar({ open: true, message: 'Please upload a resume first', severity: 'warning' });
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await api.post(`/students/profiles/${profile.id}/analyze_resume/`);
+  //     setResumeAnalysis(response.data);
+  //     setOpenResumeDialog(true);
+  //     fetchData();
+  //     setSnackbar({ open: true, message: 'Resume analyzed successfully!', severity: 'success' });
+  //   } catch (error) {
+  //     setSnackbar({ open: true, message: error.response?.data?.error || 'Failed to analyze resume', severity: 'error' });
+  //   }
+  // };
+
+  // const handleSaveProfile = async () => {
+  //   try {
+  //     const profileId = profile?.id;
+  //     const formData = new FormData();
+
+  //     // Add all form fields (excluding files)
+  //     Object.keys(profileForm).forEach(key => {
+  //       if (key !== 'profile_picture' && key !== 'resume') {
+  //         const value = profileForm[key];
+  //         // Include the value if it's not null or undefined (allow empty strings, 0, false)
+  //         if (value !== null && value !== undefined) {
+  //           formData.append(key, value);
+  //         }
+  //       }
+  //     });
+
+  //     // Add files if they exist
+  //     if (resumeFile) {
+  //       formData.append('resume', resumeFile);
+  //     }
+  //     if (profilePictureFile) {
+  //       formData.append('profile_picture', profilePictureFile);
+  //     }
+
+  //     if (!profileId) {
+  //       // Create new profile
+  //       await api.post('/students/profiles/', formData, {
+  //         headers: { 'Content-Type': 'multipart/form-data' },
+  //       });
+  //     } else {
+  //       // Update existing profile - use PATCH for partial update
+  //       await api.patch(`/students/profiles/${profileId}/`, formData, {
+  //         headers: { 'Content-Type': 'multipart/form-data' },
+  //       });
+  //     }
+
+  //     setProfileEditMode(false);
+  //     setResumeFile(null);
+  //     setProfilePictureFile(null);
+  //     fetchData();
+  //     setSnackbar({ open: true, message: 'Profile saved successfully!', severity: 'success' });
+  //   } catch (error) {
+  //     console.error('Profile save error:', error);
+  //     console.error('Error response:', error.response?.data);
+  //     const errorMessage = error.response?.data?.detail ||
+  //                         error.response?.data?.error ||
+  //                         Object.values(error.response?.data || {}).flat().join(', ') ||
+  //                         'Failed to save profile';
+  //     setSnackbar({ open: true, message: errorMessage, severity: 'error' });
+  //   }
+  // };
 
   const handleRegisterForEvent = async (eventId) => {
     try {
@@ -938,7 +1055,7 @@ function StudentDashboard() {
                                     )}
                                   </Box>
                                 </Grid>
-                                <Grid item xs={12}>
+                                {/* <Grid item xs={12}>
                                   <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
                                     Academic Documents
                                   </Typography>
@@ -995,7 +1112,7 @@ function StudentDashboard() {
                                       </Button>
                                     )}
                                   </Box>
-                                </Grid>
+                                </Grid> */}
                               </Grid>
                             </CardContent>
                           </Card>
